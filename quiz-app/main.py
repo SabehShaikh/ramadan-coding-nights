@@ -5,7 +5,6 @@ st.set_page_config(layout="wide" , page_title="Pakistan Quiz App", page_icon="�
 # Title
 st.title("📝 Quiz Application")
 
-
 # Quiz questions
 questions = [
     {
@@ -47,6 +46,16 @@ questions = [
         "question": "Which city is famous for producing sports goods in Pakistan?",
         "options": ["Sialkot", "Lahore", "Karachi", "Multan"],
         "answer": "Sialkot"
+    },
+    {
+        "question": "Which historical monument is located in Lahore?",
+        "options": ["Minar-e-Pakistan", "Mazar-e-Quaid", "Faisal Mosque", "Badshahi Mosque"],
+        "answer": "Minar-e-Pakistan"
+    },
+    {
+        "question": "What is the capital city of Balochistan Province?",
+        "options": ["Gwadar", "Quetta", "Zhob", "Khuzdar"],
+        "answer": "Quetta"
     }
 ]
 
@@ -55,18 +64,18 @@ if "current_index" not in st.session_state:
     st.session_state.score = 0
     st.session_state.show_feedback = False
     st.session_state.feedback = ""
-
+    st.session_state.answered = False
 
 def show_question():
     question = questions[st.session_state.current_index]
-    
+
     st.progress((st.session_state.current_index + 1) / len(questions))
 
-
     st.subheader(f"Question {st.session_state.current_index + 1}: {question['question']}")
-    selected_option = st.radio("Choose your answer", question["options"], key=st.session_state.current_index)
+    disabled = st.session_state.answered
+    selected_option = st.radio("Choose your answer", question["options"], key=st.session_state.current_index, disabled=disabled)
 
-    if st.button("Submit Answer"):
+    if st.button("Submit Answer", disabled=st.session_state.answered):
         if selected_option:
             if selected_option == question["answer"]:
                 st.session_state.feedback = "✅ Correct!"
@@ -74,10 +83,9 @@ def show_question():
             else:
                 st.session_state.feedback = f"❌ Incorrect! The correct answer is {question['answer']}"
             st.session_state.show_feedback = True
+            st.session_state.answered = True
         else:
-            st.warning("Please select an option.")     
-
-
+            st.warning("Please select an option.") 
 
     if st.session_state.show_feedback:
         st.write(st.session_state.feedback)
@@ -87,16 +95,16 @@ def show_question():
             st.session_state.current_index += 1
             st.session_state.show_feedback = False
             st.session_state.feedback = ""
+            st.session_state.answered = False
             st.rerun()
 
 def show_result():
     st.success(f"🎉 Quiz Completed! Your score is {st.session_state.score} out of {len(questions)}.")
 
-    # Feedback based on results
-    if st.session_state.score == len(questions): # all answered correctly
+    if st.session_state.score == len(questions):
         st.balloons()
         st.write("🏆 Excellent! You're a quiz master!")
-    elif st.session_state.score >= len(questions) / 2: # at least half correct
+    elif st.session_state.score >= len(questions) / 2:
         st.write("👍 Good job! But there's room for improvement.")
     else:
         st.write("😔 Better luck next time! Keep learning.")
@@ -106,6 +114,7 @@ def show_result():
         st.session_state.score = 0
         st.session_state.show_feedback = False
         st.session_state.feedback = ""
+        st.session_state.answered = False
         st.rerun()
 
 if st.session_state.current_index < len(questions):
