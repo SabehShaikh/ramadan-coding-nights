@@ -56,21 +56,33 @@ if "current_index" not in st.session_state:
     st.session_state.show_feedback = False
     st.session_state.feedback = ""
 
+
 def show_question():
     question = questions[st.session_state.current_index]
+    
+    st.progress((st.session_state.current_index + 1) / len(questions))
+
+
     st.subheader(f"Question {st.session_state.current_index + 1}: {question['question']}")
     selected_option = st.radio("Choose your answer", question["options"], key=st.session_state.current_index)
 
     if st.button("Submit Answer"):
-        if selected_option == question["answer"]:
-            st.session_state.feedback = "✅ Correct!"
-            st.session_state.score += 1
+        if selected_option:
+            if selected_option == question["answer"]:
+                st.session_state.feedback = "✅ Correct!"
+                st.session_state.score += 1
+            else:
+                st.session_state.feedback = f"❌ Incorrect! The correct answer is {question['answer']}"
+            st.session_state.show_feedback = True
         else:
-            st.session_state.feedback = f"❌ Incorrect! The correct answer is {question['answer']}"
-        st.session_state.show_feedback = True
+            st.warning("Please select an option.")     
+
+
 
     if st.session_state.show_feedback:
         st.write(st.session_state.feedback)
+        st.write(f"📊 Current Score: **{st.session_state.score}** / **{len(questions)}**")
+
         if st.button("Next Question"):
             st.session_state.current_index += 1
             st.session_state.show_feedback = False
@@ -79,6 +91,16 @@ def show_question():
 
 def show_result():
     st.success(f"🎉 Quiz Completed! Your score is {st.session_state.score} out of {len(questions)}.")
+
+    # Feedback based on results
+    if st.session_state.score == len(questions): # all answered correctly
+        st.balloons()
+        st.write("🏆 Excellent! You're a quiz master!")
+    elif st.session_state.score >= len(questions) / 2: # at least half correct
+        st.write("👍 Good job! But there's room for improvement.")
+    else:
+        st.write("😔 Better luck next time! Keep learning.")
+
     if st.button("Restart Quiz"):
         st.session_state.current_index = 0
         st.session_state.score = 0
